@@ -29,7 +29,7 @@ namespace Singleton {
         }
 
         public void Update(string IP, string Login, string Password) {
-            _IP = IsValidIP(IP.Split('.').ToList()) ? IP : throw new Exception("Wrong IP!.");
+            _IP = IsValidIP(IP.Split('.').ToList()) ? IP : throw new Exception("Не корректный IP!.");
             _Login = Login;
             _Password = Password;
         }
@@ -40,21 +40,29 @@ namespace Singleton {
 
         public void UpdateFromFile(string path) {
             List<string> param = new List<string>();
-            using (StreamReader Out = new StreamReader(path)) {                
-                string line;
-                while((line = Out.ReadLine()) != null) {
-                    param.Add(line.Substring(line.IndexOf('=') + 2));
+            try {
+                using (StreamReader Out = new StreamReader(path)) {
+                    string line;
+                    while ((line = Out.ReadLine()) != null) {
+                        param.Add(line.Substring(line.IndexOf('=') + 2));
+                    }
+                }
+                if (param.Count == 3) {
+                    _IP = IsValidIP(param[0].Split('.').ToList())
+                        ? param[0]
+                        : throw new FormatException("Не корректный IP!");
+                    _Login = param[1];
+                    _Password = param[2];
+                }
+                else {
+                    throw new FormatException("Неверный формат параметров!");
                 }
             }
-            if (param.Count == 3) {
-                _IP = IsValidIP(param[0].Split('.').ToList()) 
-                    ? param[0] 
-                    : throw new FormatException("Wrong IP!");
-                _Login = param[1];
-                _Password = param[2];
+            catch(FormatException ex) {
+                Console.WriteLine($"{ex.Message} Данные не были обновлены.");
             }
-            else {
-                throw new FormatException("Wrong params! Count of params must be 3 (IP, Login, Password)");
+            catch(FileNotFoundException ex) {
+                Console.WriteLine($"{ex.Message} Данные не были обновлены.");
             }
         }
 
