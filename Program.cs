@@ -11,8 +11,8 @@ namespace Singleton
         static void Main(string[] args)
         {
             var a = Config.GetInstance();
-            //a.Update("0.0.0.0", "PC", "12345");
-            //a.GetConfig();
+            a.Update("0.0.0.0", "PC", "12345");
+            a.GetConfig();
             a.UpdateFromFile("./ConfigUpdate.txt");
             a.GetConfig();
             //a.WriteToFile("./Config.txt");

@@ -1,89 +1,101 @@
-﻿using System;
-using System.CodeDom;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 
-namespace Singleton {
-
-    class Config {
+namespace Singleton
+{
+    class Config
+    {
         private static Config _Instance;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "login")]
-        public string _Login { get; private set; }
+        public string Login { get; private set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "ip")]
-        public string _IP { get; private set; }
+        public string IP { get; private set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore, PropertyName = "passwd")]
-        public string _Password { get; private set; }
+        public string Password { get; private set; }
 
         private List<string> Properties = new List<string> { "login", "ip", "passwd" };
 
         private Config() { }
 
-        public static Config GetInstance() {
-            if (_Instance == null) {
+        public static Config GetInstance()
+        {
+            if (_Instance == null)
+            {
                 _Instance = new Config();
             }
             return _Instance;
         }
 
-        private bool IsValidIP(string IP) {
-            try {
+        private bool IsValidIP(string IP)
+        {
+            try
+            {
                 return IP
                     .Split('.')
                     .ToList()
                     .Where(x => Int32.Parse(x) >= 0)
                     .Count() == 4;
             }
-            catch {
+            catch
+            {
                 return false;
             }
         }
 
-        public void Update(string IP, string Login, string Password) {
-            _IP = IsValidIP(IP) ? IP : throw new Exception("Не корректный IP!.");
-            _Login = Login;
-            _Password = Password;
+        public void Update(string IP, string Login, string Password)
+        {
+            this.IP = IsValidIP(IP) ? IP : throw new Exception("Не корректный IP!.");
+            this.Login = Login;
+            this.Password = Password;
         }
 
-        public void GetConfig() {
-            if (_IP == null || _Password == null || _Login == null)
+        public void GetConfig()
+        {
+            if (IP == null || Password == null || Login == null)
                 Console.WriteLine("Конфиг пустой.");
             else
-                Console.WriteLine($"IP = {_IP} \nLogin = {_Login} \nPassword = {_Password}");
+                Console.WriteLine($"IP = {IP} \nLogin = {Login} \nPassword = {Password}");
         }
 
-        public void UpdateFromFile(string path) {
+        public void UpdateFromFile(string path)
+        {
             JObject obj = JObject.Parse(File.ReadAllText(path));
-            try {
-                obj.Properties().ToList().ForEach(item => {
+
+            try
+            {
+                obj.Properties().ToList().ForEach(item =>
+                {
                     if (Properties.IndexOf(item.Name) == -1)
                         throw new FormatException($"Не удалось найти свойство {item.Name}. Данные не были обновлены");
                 });
 
-                _IP = IsValidIP(obj.GetValue("ip").ToString())
+                IP = IsValidIP(obj.GetValue("ip").ToString())
                     ? obj.GetValue("ip").ToString()
                     : throw new ArgumentException("Не корректный IP!");
 
-                _Login = obj.GetValue("login").ToString();
-                _Password = obj.GetValue("passwd").ToString();
+                Login = obj.GetValue("login").ToString();
+                Password = obj.GetValue("passwd").ToString();
             }
-            catch(FormatException ex) {
+            catch (FormatException ex)
+            {
                 Console.WriteLine(ex.Message);
             }
-            catch(ArgumentException ex) {
+            catch (ArgumentException ex)
+            {
                 Console.WriteLine(ex.Message);
             }
         }
 
-        public void WriteToFile(string path) {
+        public void WriteToFile(string path)
+        {
             File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
     }
